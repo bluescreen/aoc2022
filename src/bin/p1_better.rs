@@ -5,10 +5,7 @@ fn main() {
     let mut all_max: Vec<u32> = lines
         .split("\n\n")
         .map(|x| {
-            return x
-                .split("\n")
-                .flat_map(|p| p.parse::<u32>())
-                .sum::<u32>();
+            return x.split("\n").flat_map(|p| p.parse::<u32>()).sum::<u32>();
         })
         .collect();
 
