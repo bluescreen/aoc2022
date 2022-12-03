@@ -1,12 +1,28 @@
 use aoc2022::util::read_line;
-use std::collections::HashSet;
+use std::{ collections::HashSet, slice::Chunks };
 
-fn share_char(a: Vec<char>, b: Vec<char>) -> char {
-    let set1: HashSet<char> = HashSet::from_iter(a);
-    let set2: HashSet<char> = HashSet::from_iter(b);
-    let intersect = set1.intersection(&set2);
-    let char = intersect.into_iter().next().unwrap_or(&'1');
-    return *char;
+// fn share_char(parts: Chunks<char>) -> char {
+//     let part1 = parts.next().unwrap();
+//     let part2 = parts.next().unwrap();
+
+//     let set1: HashSet<char> = HashSet::from_iter(part1);
+//     let set2: HashSet<char> = HashSet::from_iter(part2);
+//     let intersect = set1.intersection(&set2);
+//     let char = intersect.into_iter().next().unwrap_or(&'1');
+//     return *char;
+// }
+
+pub fn intersection(chars: Vec<Vec<char>>) -> Vec<char> {
+    let mut intersect_result: Vec<char> = chars[0].clone();
+
+    for temp_vec in chars {
+        let unique_a: HashSet<char> = temp_vec.into_iter().collect();
+        intersect_result = unique_a
+            .intersection(&intersect_result.into_iter().collect())
+            .map(|i| *i)
+            .collect::<Vec<_>>();
+    }
+    intersect_result
 }
 
 fn prioritize(c: char) -> usize {
@@ -31,13 +47,14 @@ fn prioritize_all(lines: String) -> Vec<usize> {
 
 fn prioritize_rucksack(line: Vec<char>) -> usize {
     let middle: usize = (line.len() / 2) as usize;
-    let mut parts = line.chunks(middle).into_iter();
+    let parts = line
+        .chunks(middle)
+        .map(|c| c.to_vec())
+        .collect::<Vec<Vec<char>>>();
 
-    let part1 = parts.next().unwrap();
-    let part2 = parts.next().unwrap();
-    let share_char = share_char(part1.to_vec(), part2.to_vec());
+    let share_char = intersection(parts)[0];
     let prio = prioritize(share_char);
-    println!("{} -> Rucksack {:?} - {:?} ({})", prio, part1, part2, share_char);
+    println!("{} -> Rucksack ({})", prio, share_char);
     prio
 }
 
