@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use aoc2022::util::read_line;
 
 // X Rock, Y for Paper, and Z for Scissors
