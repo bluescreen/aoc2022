@@ -38,7 +38,7 @@ fn prioritize_rucksack(line: Vec<char>) -> usize {
     prio
 }
 
-fn prioritize_part1(lines: String) -> Vec<usize> {
+fn prioritize_part1(lines: &String) -> Vec<usize> {
     let result: Vec<usize> = lines
         .lines()
         .map(|line| {
@@ -82,10 +82,8 @@ fn prioritize_part2(lines: String) -> Vec<usize> {
 fn main() {
     let lines = read_line("./input/p3.txt").unwrap();
 
-    let result = prioritize_part1(lines);
+    let result = prioritize_part1(&lines);
     println!("Result Part 1 {}", result.iter().sum::<usize>());
-
-    let lines = read_line("./input/p3.txt").unwrap();
 
     let result = prioritize_part2(lines);
     println!("Result Part 1 {}", result.iter().sum::<usize>());
