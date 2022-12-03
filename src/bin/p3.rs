@@ -1,18 +1,7 @@
 use aoc2022::util::read_line;
-use std::{ collections::HashSet, slice::Chunks };
+use std::{ collections::HashSet };
 
-// fn share_char(parts: Chunks<char>) -> char {
-//     let part1 = parts.next().unwrap();
-//     let part2 = parts.next().unwrap();
-
-//     let set1: HashSet<char> = HashSet::from_iter(part1);
-//     let set2: HashSet<char> = HashSet::from_iter(part2);
-//     let intersect = set1.intersection(&set2);
-//     let char = intersect.into_iter().next().unwrap_or(&'1');
-//     return *char;
-// }
-
-pub fn intersection(chars: Vec<Vec<char>>) -> Vec<char> {
+pub fn find_intersection(chars: Vec<Vec<char>>) -> Vec<char> {
     let mut intersect_result: Vec<char> = chars[0].clone();
 
     for temp_vec in chars {
@@ -25,6 +14,9 @@ pub fn intersection(chars: Vec<Vec<char>>) -> Vec<char> {
     intersect_result
 }
 
+// Lowercase item types a through z have priorities 1 through 26.
+// Uppercase item types A through Z have priorities 27 through 52.
+// 16 (p), 38 (L), 42 (P), 22 (v), 20 (t)
 fn prioritize(c: char) -> usize {
     let number = c as i32;
     if number <= 90 {
@@ -34,7 +26,19 @@ fn prioritize(c: char) -> usize {
     }
 }
 
-fn prioritize_all(lines: String) -> Vec<usize> {
+fn prioritize_rucksack(line: Vec<char>) -> usize {
+    let middle: usize = (line.len() / 2) as usize;
+    let parts = line
+        .chunks(middle)
+        .map(|c| c.to_vec())
+        .collect::<Vec<Vec<char>>>();
+
+    let share_char = find_intersection(parts)[0];
+    let prio = prioritize(share_char);
+    prio
+}
+
+fn prioritize_part1(lines: String) -> Vec<usize> {
     let result: Vec<usize> = lines
         .lines()
         .map(|line| {
@@ -45,25 +49,44 @@ fn prioritize_all(lines: String) -> Vec<usize> {
     result
 }
 
-fn prioritize_rucksack(line: Vec<char>) -> usize {
-    let middle: usize = (line.len() / 2) as usize;
-    let parts = line
-        .chunks(middle)
-        .map(|c| c.to_vec())
-        .collect::<Vec<Vec<char>>>();
+fn group_lines(lines: String, num: usize) -> Vec<Vec<String>> {
+    let grouped: Vec<Vec<String>> = lines.lines().fold(Vec::new(), |mut acc, l| {
+        if acc.last().is_some() && acc.last().unwrap().len() < num {
+            acc.last_mut().unwrap().push(l.to_string());
+        } else {
+            acc.push(vec![l.to_string()]);
+        }
+        acc
+    });
+    grouped
+}
 
-    let share_char = intersection(parts)[0];
-    let prio = prioritize(share_char);
-    println!("{} -> Rucksack ({})", prio, share_char);
-    prio
+fn prioritize_part2(lines: String) -> Vec<usize> {
+    let grouped = group_lines(lines, 3);
+
+    let result = grouped
+        .iter()
+        .map(|group| {
+            let group = group
+                .iter()
+                .map(|x| x.chars().collect())
+                .collect();
+            let share_char = find_intersection(group)[0];
+            let prio = prioritize(share_char);
+            prio
+        })
+        .collect();
+    result
 }
 
 fn main() {
     let lines = read_line("./input/p3.txt").unwrap();
-    let result = prioritize_all(lines);
-    println!("Result {:?} = {}", result, result.iter().sum::<usize>());
-}
 
-// Lowercase item types a through z have priorities 1 through 26.
-// Uppercase item types A through Z have priorities 27 through 52.
-// 16 (p), 38 (L), 42 (P), 22 (v), 20 (t)
+    let result = prioritize_part1(lines);
+    println!("Result Part 1 {}", result.iter().sum::<usize>());
+
+    let lines = read_line("./input/p3.txt").unwrap();
+
+    let result = prioritize_part2(lines);
+    println!("Result Part 1 {}", result.iter().sum::<usize>());
+}
