@@ -23,9 +23,7 @@ fn move_cratemover_9001(stacks: &mut Vec<Stack>, amount: usize, from: usize, to:
     }
 }
 
-fn repackage_part1(lines: &String) -> Vec<char> {
-    let mut stacks = build_stacks();
-
+fn repackage_part1(stacks: &mut Vec<Stack>, lines: &String) -> Vec<char> {
     let re = Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
 
     for line in lines.lines() {
@@ -34,7 +32,7 @@ fn repackage_part1(lines: &String) -> Vec<char> {
         let from = caps[2].parse::<usize>().unwrap();
         let to = caps[3].parse::<usize>().unwrap();
 
-        move_cratemover_9000(&mut stacks, amount, from, to);
+        move_cratemover_9000(stacks, amount, from, to);
     }
     let v: Vec<char> = stacks
         .iter()
@@ -43,9 +41,7 @@ fn repackage_part1(lines: &String) -> Vec<char> {
     v
 }
 
-fn repackage_part2(lines: String) -> Vec<char> {
-    let mut stacks = build_stacks();
-
+fn repackage_part2(stacks: &mut Vec<Stack>, lines: String) -> Vec<char> {
     let re = Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
 
     for line in lines.lines() {
@@ -54,7 +50,7 @@ fn repackage_part2(lines: String) -> Vec<char> {
         let from = caps[2].parse::<usize>().unwrap();
         let to = caps[3].parse::<usize>().unwrap();
 
-        move_cratemover_9001(&mut stacks, amount, from, to);
+        move_cratemover_9001(stacks, amount, from, to);
     }
     let v: Vec<char> = stacks
         .iter()
@@ -63,43 +59,46 @@ fn repackage_part2(lines: String) -> Vec<char> {
     v
 }
 
-fn build_stacks() -> Vec<Stack> {
-    /*
-        [H]         [S]         [D]
-    [S] [C]         [C]     [Q] [L]
-    [C] [R] [Z]     [R]     [H] [Z]
-    [G] [N] [H] [S] [B]     [R] [F]
-[D] [T] [Q] [F] [Q] [Z]     [Z] [N]
-[Z] [W] [F] [N] [F] [W] [J] [V] [G]
-[T] [R] [B] [C] [L] [P] [F] [L] [H]
-[H] [Q] [P] [L] [G] [V] [Z] [D] [B]
- 1   2   3   4   5   6   7   8   9 
- */
-    let stacks =
-        "HTZD
-    QRWTGCS
-    PBFQNRCH
-    LCNFHZ
-    GLFQS
-    VPWZBRCS
-    ZFJ
-    DLVZRHQ
-    BHGNFZLD";
+fn build_stacks_from_string(lines: String) -> Vec<Stack> {
+    let mut v: Vec<Stack> = vec![];
+    let mut num_columns = 0;
 
-    let stacks = stacks
-        .lines()
-        .map(|x| { Stack::from_vec(x.chars().collect()) })
-        .collect();
-    stacks
+    for line in lines.lines().rev().skip(1) {
+        let mut index = 1;
+        if num_columns == 0 {
+            num_columns = line
+                .chars()
+                .filter(|x| x.is_alphabetic())
+                .count();
+        }
+
+        let bytes = line.as_bytes();
+        for stack_index in 0..num_columns {
+            if stack_index >= v.len() {
+                v.push(Stack::new());
+            }
+            if (bytes[index] as char) != ' ' {
+                v[stack_index].push(bytes[index] as char);
+            }
+            index += 4;
+        }
+    }
+
+    v
 }
 
 fn main() {
     let lines = read_line("./input/p5.txt").unwrap();
+    let mut splits = lines.split("\n\n").into_iter();
+    let stack_strings = splits.next().unwrap().to_string();
+    let instructions = splits.next().unwrap().to_string();
 
-    let result = repackage_part1(&lines);
+    let mut stacks = build_stacks_from_string(stack_strings.to_string());
+    let result = repackage_part1(&mut stacks, &instructions);
     println!("Result Part 1: {:?}", vec_to_string(result));
 
-    let result = repackage_part2(lines);
+    let mut stacks = build_stacks_from_string(stack_strings.to_string());
+    let result = repackage_part2(&mut stacks, instructions);
     println!("Result Part 2: {:?}", vec_to_string(result));
 }
 
@@ -115,8 +114,8 @@ struct Stack {
 }
 
 impl Stack {
-    fn from_vec(vec: Vec<char>) -> Self {
-        Stack { stack: vec }
+    fn new() -> Self {
+        Stack { stack: vec![] }
     }
 
     fn last(&self) -> char {
