@@ -5,11 +5,25 @@ use std::collections::HashSet;
 use aoc2022::util::read_line;
 use itertools::Itertools;
 
+#[derive(Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+impl Point {
+    fn parse(coords: (&str, &str)) -> Self {
+        Point {
+            x: coords.0.parse::<i32>().unwrap(),
+            y: coords.1.parse::<i32>().unwrap(),
+        }
+    }
+}
+
 fn main() {
     let lines = read_line("./input/p14.txt").unwrap();
 
     println!("Part 1: {}", solve(&lines));
-    // println!("Part 2: {}", solve(lines));
+    println!("Part 2: {}", solve2(&lines));
 }
 
 fn solve(lines: &str) -> i32 {
@@ -18,19 +32,12 @@ fn solve(lines: &str) -> i32 {
         .map(|p| { (p.x, p.y) })
         .collect();
 
-    println!("{:#?}", coords);
-    let max_y = coords
-        .iter()
-        .map(|p| { p.1 })
-        .max()
-        .unwrap();
+    let max_y = find_max_y(&coords);
 
     let mut i = 0;
     loop {
         let mut p = Point { x: 500, y: 0 };
         loop {
-            println!("{:?}", p);
-
             if !coords.contains(&(p.x, p.y + 1)) {
                 p.y += 1;
             } else if !coords.contains(&(p.x - 1, p.y + 1)) {
@@ -52,21 +59,47 @@ fn solve(lines: &str) -> i32 {
     }
 }
 
-#[derive(Debug)]
-struct Point {
-    x: i32,
-    y: i32,
+fn find_max_y(coords: &HashSet<(i32, i32)>) -> i32 {
+    let max_y = coords
+        .iter()
+        .map(|p| { p.1 })
+        .max()
+        .unwrap();
+    max_y
 }
-impl Point {
-    fn parse(coords: (&str, &str)) -> Self {
-        Point {
-            x: coords.0.parse::<i32>().unwrap(),
-            y: coords.1.parse::<i32>().unwrap(),
-        }
-    }
 
-    fn tuple(self) -> (i32, i32) {
-        (self.x, self.y)
+fn solve2(lines: &str) -> i32 {
+    let mut coords: HashSet<(i32, i32)> = parse_coords(lines)
+        .iter()
+        .map(|p| { (p.x, p.y) })
+        .collect();
+
+    let max_y = find_max_y(&coords);
+
+    let mut i = 0;
+    loop {
+        let mut p = Point { x: 500, y: 0 };
+        loop {
+            if coords.contains(&(p.x, p.y)) {
+                return i;
+            } else if p.y == max_y + 1 {
+                coords.insert((p.x, p.y));
+                break;
+            }
+            if !coords.contains(&(p.x, p.y + 1)) {
+                p.y += 1;
+            } else if !coords.contains(&(p.x - 1, p.y + 1)) {
+                p.x -= 1;
+                p.y += 1;
+            } else if !coords.contains(&(p.x + 1, p.y + 1)) {
+                p.x += 1;
+                p.y += 1;
+            } else {
+                coords.insert((p.x, p.y));
+                break;
+            }
+        }
+        i += 1;
     }
 }
 
@@ -75,20 +108,18 @@ fn parse_coords(lines: &str) -> Vec<Point> {
         .lines()
         .flat_map(|line| {
             let coords_parts = line.split(" -> ").collect::<Vec<&str>>();
-            let coords: Vec<Point> = coords_parts
-                .iter()
-                .map(|coord| {
-                    let coords = coord.split_once(",").unwrap();
-                    Point::parse(coords)
-                })
-                .collect();
-
-            let connected = connect_points(coords);
-
+            let connected = connect_points(
+                coords_parts
+                    .iter()
+                    .map(|coord| {
+                        let coords = coord.split_once(",").unwrap();
+                        Point::parse(coords)
+                    })
+                    .collect()
+            );
             connected
         })
         .collect_vec();
-
     coords
 }
 
