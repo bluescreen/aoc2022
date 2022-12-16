@@ -14,7 +14,7 @@ impl Sensor {
         (self.pos_x - self.beacon_x).abs() + (self.pos_y - self.beacon_y).abs()
     }
 
-    fn c_dist(&self, x: i64, y: i64) -> i64 {
+    fn distance_to(&self, x: i64, y: i64) -> i64 {
         (self.pos_x - x).abs() + (self.pos_y - y).abs()
     }
 }
@@ -22,7 +22,7 @@ impl Sensor {
 fn main() {
     let lines = read_line("./input/p15.txt").unwrap();
 
-    //println!("Part 1: {}", solve(&lines, 2000000));
+    println!("Part 1: {}", solve(&lines, 2000000));
     println!("Part 2: {}", solve2(&lines, 4000000));
 }
 
@@ -69,7 +69,6 @@ fn solve2(lines: &str, m: i64) -> i64 {
     }
 
     let all_sensors = sensors;
-    //println!("{:?}", all_sensors);
 
     for sensor in &all_sensors {
         let top_y = sensor.pos_y + sensor.distance() - 1;
@@ -90,7 +89,7 @@ fn solve2(lines: &str, m: i64) -> i64 {
 
                 let mut found = false;
                 for sensor_2 in &all_sensors {
-                    if sensor_2.c_dist(x, y) <= sensor_2.distance() {
+                    if sensor_2.distance_to(x, y) <= sensor_2.distance() {
                         found = true;
                         break;
                     }
